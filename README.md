@@ -1,6 +1,10 @@
 # StreamlitCrime
 Visualising Crime statistics in England using Streamlit and the Police API
 
+# Preview
+
+Take a look at this dashboard [here](http://35.178.166.243:8501/).
+
 # Running
 
 Build the Docker image with the following command:
