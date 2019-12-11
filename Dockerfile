@@ -16,7 +16,7 @@ ENV PYTHONIOENCODING=utf-8
 ENV LC_ALL=C.UTF-8
 ENV export LANG=C.UTF-8
 
-COPY config.toml ~/.streamlit/.
+COPY config.toml ~/.streamlit/
 
 EXPOSE 8501
 CMD [ "streamlit", "run", "./app.py" ]
