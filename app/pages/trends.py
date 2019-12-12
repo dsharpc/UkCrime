@@ -21,7 +21,7 @@ def fetch_data(coordinates=None, date=None):
         df = []
     return df
 
-@st.cache(ignore_hash=True)
+@st.cache(allow_output_mutation=True)
 def hist_data(dates, range, poly):
     """
     Function that fetches crimes over a set number of periods
