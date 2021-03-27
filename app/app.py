@@ -9,6 +9,11 @@ import pages.overview
 import pages.trends
 
 
+st.set_page_config(
+    page_title=' UK Crime from Police API'
+)
+
+
 ## Setting up the pages
 PAGES = {
     "Overview": pages.overview,
@@ -41,7 +46,7 @@ def match_postcodes(postcode):
         raise Exception
     return df, polygon
 
-@st.cache
+@st.cache(ttl=86400)
 def fetch_dates():
     """
     Function that fetches the date range of the available data
@@ -111,3 +116,6 @@ if len(force_people) > 0:
 # Actual function to write the page selected in the radio selector
 with st.spinner(f"Loading {selection} ..."):
     page.write(postcode, poly, available, code)
+
+
+st.sidebar.markdown("  \n  \nDeveloped by [Daniel Sharp](https://github.com/dsharpc/)")
