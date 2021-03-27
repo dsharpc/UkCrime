@@ -6,7 +6,6 @@ import numpy as np
 
 
 
-
 def fetch_data(coordinates=None, date=None):
     """
     Function to fetch the list of individual crimes that happened in the area 
@@ -40,7 +39,7 @@ def write(postcode, poly, available, code):
     st.title(f"Crime statistics for neighbourhood around {postcode.upper()}")
     st.markdown("The most common crimes in your area for the date selected are:")
 
-    df = hist_data(available, 10, poly)
+    df = hist_data(available, 12, poly)
 
     crime_type = st.multiselect('Select the list of crimes you\'d like to filter by',
                             list(df.category.unique()), list(df.category.unique()))
@@ -49,11 +48,11 @@ def write(postcode, poly, available, code):
     df_f = df[df['category'].isin(crime_type)].copy()
 
     if len(df_f) > 0:
-        st.markdown(f"Total number of crimes in selected categories over 10 most recent months: {len(df_f)}")
+        st.markdown(f"Total number of crimes in selected categories over 12 most recent months: {len(df_f)}")
         st.vega_lite_chart(df_f.groupby('month')['category'].count().reset_index(), {
         'title': 'Time Series of Crimes in Type',
         'width':600,
-        'height':100,
+        'height':400,
         'mark': 'line',
         'encoding': {
             'x': {'field': 'month', 'type': 'ordinal', 'sort':'x',
@@ -61,7 +60,10 @@ def write(postcode, poly, available, code):
             },
             'y': {'field': 'category', 'type': 'quantitative',
             "axis":{"title":'Number of crimes'}
-            }}})
+            },
+        "tooltip": [
+          {"field": "category", "type": "quantitative"}]
+          }})
         
     else:
         st.write("Lucky you, no crimes found in this are for this date")
