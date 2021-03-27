@@ -3,10 +3,11 @@ import requests
 import seaborn as sns
 import pandas as pd
 import numpy as np
+import pydeck as pdk
 
 
 
-@st.cache
+@st.cache(ttl=86400)
 def fetch_data(coordinates=None, date=None):
     """
     Function to fetch the list of individual crimes that happened in the area 
@@ -20,8 +21,6 @@ def fetch_data(coordinates=None, date=None):
     else:
         df = []
     return df
-
-
 
 
 ### MAIN PAGE
@@ -49,20 +48,22 @@ def write(postcode, poly, available, code):
     df['colorG'] = [x[1] for x in df['rgb_palette']]
     df['colorB'] = [x[2] for x in df['rgb_palette']]
     bar_data = df['category'].value_counts(normalize=True).reset_index().merge(pal_df, left_on = 'index', right_on='category')
+    bar_data['percentage'] = bar_data['category_x'] * 100
+    
     if len(df) > 0:
         # Write bar chart
         st.markdown(f"Total number of crimes: {len(df)}")
         st.vega_lite_chart(bar_data, {
         'title': 'Percentage of total crimes per crime type',
         'width':600,
-        'height':100,
-        'mark': 'bar',
+        'height':400,
+        'mark': {'type': 'bar', 'tooltip': True },
         'encoding': {
-            'x': {'field': 'index', 'type': 'nominal', 'sort':'-y',
+            'y': {'field': 'index', 'type': 'nominal', 'sort':'-x',
             "axis":{"title":'Crime Category'}
             },
-            'y': {'field': 'category_x', 'type': 'quantitative',
-            "axis":{"title":'Number of crimes'}
+            'x': {'field': 'percentage', 'type': 'quantitative',
+            "axis":{"title":'Percentage of crimes (%)'}
             },
             "color": {
             "field": "hex_palette", "type": "nominal", "scale" : None,
@@ -76,32 +77,43 @@ def write(postcode, poly, available, code):
         st.markdown("The colours in the map below match the colour of the crime type in the bar plot")
 
         # Build map
-        st.deck_gl_chart(
-            viewport={
-                'latitude':code[0],
-                'longitude':code[1],
-                'zoom':12
-            },
-            layers = [{
-            'data': df[df['category'].isin(crime_type)],
-            'type': 'ScatterplotLayer',
-            'radiusScale':0.1,
-            'pickable':True
-        }])
-        st.markdown('Scatterplot will not automatically centre to the new postcode as it is not currently supported, please move manually to observe the crimes in the area.')
-
+        st.pydeck_chart(pdk.Deck(
+            map_style='mapbox://styles/mapbox/light-v9',
+            initial_view_state=pdk.ViewState(
+                latitude=code[0],
+                longitude=code[1],
+                zoom=14
+            ),
+            layers=[
+                pdk.Layer(
+                    'ScatterplotLayer',
+                    data=df[df['category'].isin(crime_type)],
+                    get_position='[longitude, latitude]',
+                    get_color='[colorR, colorG, colorB, 160]',
+                    get_radius=10,
+                    pickable=True,
+                )
+            ],
+            tooltip={
+                'html': '<b>Crime type:</b> {category}',
+                'style': {
+                    'color': 'white'
+                }
+            }
+        ))
+        st.text(" \n")
         df_o = df[df['category'].isin(crime_type)]['last_outcome'].value_counts(normalize=True).reset_index()
-
+        df_o['percentage'] = df_o['last_outcome'] * 100
         st.vega_lite_chart(df_o, {
         'title': 'Distribution of outcomes per crime type',
-        'width':500,
-        'height':100,
+        'width':600,
+        'height':300,
         'mark': 'bar',
         'encoding': {
             'y': {'field': 'index', 'type': 'nominal', 'sort':'-x',
             "axis":{"title":'Outcome'}
             },
-            'x': {'field': 'last_outcome', 'type': 'quantitative',
+            'x': {'field': 'percentage', 'type': 'quantitative',
             "axis":{"title":'Percentage of total'}
             }
         }})
