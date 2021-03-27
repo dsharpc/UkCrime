@@ -3,7 +3,7 @@ Visualising Crime statistics in England using Streamlit and the Police API
 
 # Preview
 
-Take a look at this dashboard [here](http://35.178.166.243:8501/).
+Take a look at this dashboard [here](http://ukcrime.danielsharp.me).
 
 # Running
 
