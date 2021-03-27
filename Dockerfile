@@ -4,7 +4,7 @@ RUN apt-get update
 RUN apt-get -y install htop
 
 WORKDIR /app
-
+COPY app /app
 COPY requirements.txt .
 
 RUN pip install --upgrade pip
